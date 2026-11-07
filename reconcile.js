@@ -26,9 +26,8 @@ for (const line of lines) {
 
   const txnId = String(event.txn_id);
   const timestamp = Date.parse(event.ts);
-
-  // Every event with txn_id is otherwise valid according to the README.
   const previous = latestByTxn.get(txnId);
+
   if (!previous || timestamp > previous.timestamp) {
     latestByTxn.set(txnId, { event, timestamp });
   }
@@ -39,7 +38,9 @@ let count = 0;
 
 for (const { event } of latestByTxn.values()) {
   if (event.status === "success") {
-    total += Number(event.amount);
+    // Amounts may be JSON numbers or strings with thousands separators.
+    const amount = Number(String(event.amount).replace(/,/g, ""));
+    total += amount;
     count += 1;
   }
 }
